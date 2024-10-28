@@ -34,6 +34,17 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+/*
+* The 'stat64' struct (and others) is deprecated in Apple Silicon Macs
+* and replaced with the 'stat' struct (since all Apple Silicon devices are 64-bit).
+* Apple added the macro _DARWIN_FEATURE_64_BIT_INODE to signify
+* that a device is using the newer structs.
+*/
+#if defined(__APPLE__) && defined(_DARWIN_FEATURE_64_BIT_INODE)
+	#define stat64 stat
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
