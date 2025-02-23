@@ -393,7 +393,14 @@ def string_of_arg_char (c, quote_mode=UNQUOTED):
     elif (type == "Q"):
         return "\"" + string_of_arg (param, quote_mode=QUOTED) + "\"";
     elif (type == "B"):
-        return "$(" + to_string (param) + ")";
+        body = to_string (param)
+        # to handle $( () )
+        try:
+            if body[0] == "(" and body[-1] == ")":
+                body = f" {body} "
+        except IndexError:
+            pass
+        return "$(" + body + ")"
     else:
         abort ();
 
@@ -408,14 +415,7 @@ def string_of_arg (args, quote_mode=UNQUOTED):
     text = []
     while i < len(args):
         c = string_of_arg_char(args[i], quote_mode=quote_mode)
-
-        # dash will parse '$?' as
-        # [(C, '$'), (E, '?')]
-        # but we don't normally want to escape ?
-        #
-        # so we check up after the fact: if the character after $ is escaped,
-        # we'll escape the $, too
-        if c == "$" and (i+1 < len(args)) and args[i+1][0] == "E":
+        if c == "$" and (i+1 < len(args)):
             c = "\\$"
         text.append(c)
 

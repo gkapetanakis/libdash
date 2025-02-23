@@ -462,13 +462,17 @@ and string_of_arg_char ?quote_mode:(quote_mode=QUnquoted) = function
   | V (vt,nul,name,a) ->
      "${" ^ name ^ (if nul then ":" else "") ^ string_of_var_type vt ^ string_of_arg ~quote_mode a ^ "}"
   | Q a -> "\"" ^ string_of_arg ~quote_mode:QQuoted a ^ "\""
-  | B t -> "$(" ^ to_string t ^ ")"
-
+  | B t ->
+      let s = to_string t in
+      if String.length s >= 2 && s.[0] = '(' && s.[String.length s - 1] = ')' then
+        "$( " ^ s ^ " )"
+      else
+        "$(" ^ s ^ ")"
 and string_of_arg ?quote_mode:(quote_mode=QUnquoted) = function
   | [] -> ""
   | c :: a ->
      let char = string_of_arg_char ~quote_mode c in
-     if char = "$" && next_is_escaped a
+     if char = "$" && a <> []
      then "\\$" ^ string_of_arg ~quote_mode a
      else char ^ string_of_arg ~quote_mode a
 
